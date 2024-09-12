@@ -1,13 +1,15 @@
-package com.todos.todos_tracker.entity;
+package org.trackers.todos.entity;
 
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
-public class Schedule {
+@Table(name="Schedule")
+public class ScheduleEntity {
 	@Id
 	@GeneratedValue
 	private long id;
@@ -17,8 +19,8 @@ public class Schedule {
 	private long userId;
 	private String completed;
 	
-	public Schedule() {}
-	public Schedule(long id, String name, LocalDateTime startDate, LocalDateTime endDate, long userId, String completed) {
+	public ScheduleEntity() {}
+	public ScheduleEntity(long id, String name, LocalDateTime startDate, LocalDateTime endDate, long userId, String completed) {
 		this.id = id;
 		this.name = name;
 		this.startDate = startDate;

@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "name": "Morning Meeting",
+        "startDate": "2024-09-05T09:00:00",
+        "endDate": "2024-09-05T10:00:00",
+        "userId": 1,
+        "completed": "In Progress"
+    },
+    {
+        "id": 2,
+        "name": "Lunch Break",
+        "startDate": "2024-09-05T12:00:00",
+        "endDate": "2024-09-05T13:00:00",
+        "userId": 2,
+        "completed": "In Progress"
+    },
+    {
+        "id": 3,
+        "name": "Project Discussion",
+        "startDate": "2024-09-05T14:00:00",
+        "endDate": "2024-09-05T15:30:00",
+        "userId": 1,
+        "completed": "In Progress"
+    },
+    {
+        "id": 4,
+        "name": "Client Call",
+        "startDate": "2024-09-05T16:00:00",
+        "endDate": "2024-09-05T17:00:00",
+        "userId": 1,
+        "completed": "In Progress"
+    },
+    {
+        "id": 5,
+        "name": "Team Wrap-up",
+        "startDate": "2024-09-05T17:30:00",
+        "endDate": "2024-09-05T18:00:00",
+        "userId": 1,
+        "completed": "In Progress"
+    }
+]

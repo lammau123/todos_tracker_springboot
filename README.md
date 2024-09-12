@@ -1,1 +1,0 @@
-# To to trackers application
