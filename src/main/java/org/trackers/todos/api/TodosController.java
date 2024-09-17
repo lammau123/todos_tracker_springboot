@@ -1,7 +1,12 @@
 package org.trackers.todos.api;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,10 +24,24 @@ public class TodosController {
 		this.scheduleRepository = scheduleRepository;
 	}
 	
-	@GetMapping("/{userId}")
-	public ResponseEntity<List<Schedule>> getTodos(@PathVariable("userId") Long userId){
-		var listOfTodos = scheduleRepository.findByUserId(userId);		
-		return ResponseEntity.ok(listOfTodos.stream()
+	@GetMapping("/users/{userId}")
+	private ResponseEntity<List<Schedule>> getTodosByUserId(@PathVariable("userId") Long userId, Pageable pageable){
+		var page = scheduleRepository.findByUserId(userId, 
+				PageRequest.of(pageable.getPageNumber(), 
+								pageable.getPageSize(),
+								pageable.getSortOr(Sort.by(Direction.ASC, "name"))));		
+		return ResponseEntity.ok(page.stream()
+				.map(e -> new Schedule(e.getId(), e.getName(), e.getStartDate(), e.getEndDate(), e.getUserId(), e.getCompleted()))
+				.toList());
+	}
+	
+	@GetMapping
+	private ResponseEntity<List<Schedule>> getTodos(Pageable pageable){
+		var page = scheduleRepository.findAll(
+				PageRequest.of(pageable.getPageNumber(), 
+								pageable.getPageSize(),
+								pageable.getSortOr(Sort.by(Direction.ASC, "name"))));	
+		return ResponseEntity.ok(page.stream()
 				.map(e -> new Schedule(e.getId(), e.getName(), e.getStartDate(), e.getEndDate(), e.getUserId(), e.getCompleted()))
 				.toList());
 	}

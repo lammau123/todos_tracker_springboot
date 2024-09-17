@@ -1,5 +1,6 @@
 package org.trackers.todos;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,13 +34,16 @@ class TodosApplicationTests {
 	
 	@Autowired
 	private TestRestTemplate restTemplate;
+	
+	private Map<Number, String> testData;
 
-	private Map<Number, String> loadTestData() throws Exception {
+	@BeforeEach
+	private void loadTestData() throws Exception {
 		String jsonContent = new String(Files.readAllBytes(Paths.get(resourceFile.getURI())));
         // Parse the JSON content using JsonPath
         DocumentContext documentContext = JsonPath.parse(jsonContent);
         // Read the JSON array as a List of Maps
-        JSONArray jsonArray = documentContext.read("$");
+        JSONArray jsonArray = documentContext.read("$[*]");
         Map<Number, String> map = new HashMap<>();
         for (Object obj: jsonArray) {
         	ReadContext readContext = JsonPath.parse(obj);
@@ -47,22 +51,63 @@ class TodosApplicationTests {
         	String jsonString = readContext.jsonString();
         	map.put(id, jsonString);
         }
-        return map;
+        this.testData = map;
 	}
 	
 	@Test
-	void todosShouldReturnListOfTodos() throws Exception {
-		ResponseEntity<String> response = this.restTemplate.getForEntity("http://localhost:" + port + "/todos/1", String.class);
+	void todosByUserIdShouldReturnListOfTodos() throws Exception {
+		ResponseEntity<String> response = this.restTemplate.getForEntity("http://localhost:" + port + "/todos/users/1", String.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		DocumentContext documentContext = JsonPath.parse(response.getBody());
 		JSONArray jsonArray = documentContext.read("$");
 		assertThat(jsonArray.size()).isEqualTo(4);    
-		var map = loadTestData();
-		for (Object obj : jsonArray) {
+		
+		checkResult(jsonArray);
+	}
+	
+	@Test
+	void todosShouldReturnAListOfTodos() throws Exception {
+		ResponseEntity<String> response = this.restTemplate.getForEntity("http://localhost:"+ port + "/todos", String.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		
+		DocumentContext documentContext = JsonPath.parse(response.getBody());
+		JSONArray jsonArray = documentContext.read("$");
+		assertThat(jsonArray.size()).isEqualTo(5);
+		
+		checkResult(jsonArray);
+	}
+	
+	@Test
+	void todosPageableShouldReturnAListOfTodos() throws Exception {
+		var response = this.restTemplate.getForEntity(
+				"http://localhost:"+ port + "/todos?page=0&size=2&sort=name,desc", String.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		
+		var documentContext = JsonPath.parse(response.getBody());
+		JSONArray jsonArray = documentContext.read("$");
+		assertThat(jsonArray.size()).isEqualTo(2);
+		
+		var readContext = JsonPath.parse(jsonArray.get(0));
+		var id = readContext.read("$.id");
+		assertThat(id).isEqualTo(5);
+		
+		readContext = JsonPath.parse(jsonArray.get(1));
+		id = readContext.read("$.id");
+		assertThat(id).isEqualTo(3);
+		var expectJsonString = this.testData.get(id);
+		assertThat(readContext.jsonString()).isEqualTo(expectJsonString);
+		
+		checkResult(jsonArray);
+	}
+	
+	private void checkResult(JSONArray jsonArray) {
+		for(Object obj: jsonArray) {
 			ReadContext readContext = JsonPath.parse(obj);
 			var id = readContext.read("$.id");
-			var expectJsonString = map.get(id);
+			var expectJsonString = this.testData.get(id);
 			assertThat(readContext.jsonString()).isEqualTo(expectJsonString);
 		}
 	}
+	
+	
 }
